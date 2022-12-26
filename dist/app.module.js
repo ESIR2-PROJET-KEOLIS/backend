@@ -11,13 +11,16 @@ const common_1 = require("@nestjs/common");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 const communication_rabbit_mq_module_1 = require("./communication-rabbit-mq/communication-rabbit-mq.module");
+const bus_module_1 = require("./bus/bus.module");
+const position_module_1 = require("./position/position.module");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
     (0, common_1.Module)({
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
-        imports: [communication_rabbit_mq_module_1.CommunicationRabbitMqModule],
+        imports: [communication_rabbit_mq_module_1.CommunicationRabbitMqModule,bus_module_1.BusModule, position_module_1.PositionModule],
+
     })
 ], AppModule);
 exports.AppModule = AppModule;
