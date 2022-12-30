@@ -8,13 +8,13 @@ export class CommunicationRabbitMqController{
 
     @Get()
     async getMessages() {
-      this.myService.listenToRabbitMQ();
+      /*this.myService.listenToRabbitMQ();
   
       // Écoute des messages envoyés par le service
         this.myService.wsServer.addEventListener('connection', (ws: WebSocket) => {
             ws.addEventListener('message', (event: MessageEvent) => {
                 console.log(`Message received: ${event.data}`);
             });
-      });
+        });*/
     }
 }
