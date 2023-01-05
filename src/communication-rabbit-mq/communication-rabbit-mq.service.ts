@@ -18,7 +18,7 @@ export class CommunicationRabbitMqService {
   }
 
   initWebSocket(){
-    let ws = new WebSocket.Server({ port: 4000 });
+    let ws = new WebSocket.Server({ port: 4000, host: '0.0.0.0' });
     this.wsServer = ws;
 
     console.log("WebSocket server started on port 4000");
