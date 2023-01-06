@@ -56,6 +56,8 @@ export class CommunicationRabbitMqService {
             client.send(JSON.stringify(ref.data));
           }
         });
+
+        ref.channel.ack(msg);
       });
     }
   }
