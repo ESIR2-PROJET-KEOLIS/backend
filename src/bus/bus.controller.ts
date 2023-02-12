@@ -14,6 +14,16 @@ export class BusController {
     getAll(): Bus[]{   
         return this.service.getAll();
     }
+
+    @Get('station/bus')
+    async getBusStation(): Promise<any>{   
+      return this.service.getAllBusStation();
+    }
+
+    @Get('station/metro')
+    async getAllMetroStation(): Promise<any>{   
+      return this.service.getAllSubwayStation();
+    }
   
     @ApiTags('Get')
     @Get(':id')

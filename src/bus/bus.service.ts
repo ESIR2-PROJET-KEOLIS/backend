@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Bus } from './bus.entity';
 import { Position } from '../position/position.entity';
+import { Arret } from './arret.entity';
 
 let positionTest = new Position();
 positionTest.SetPosition(12,35);
@@ -27,6 +28,8 @@ const buss : Bus[] = [
         position: positionTest.GetPosition()
     },
 ]
+const busStation : Arret[] = [];
+const MetroStation : Arret[] = [];
 
 @Injectable()
 export class BusService {
@@ -61,4 +64,54 @@ export class BusService {
         return buss;
         //return this.repository.find();
     }
+
+
+    async getAllSubwayStation():Promise<Arret[]>{
+        const fs = require("fs");
+        
+        const file = fs.readFileSync("./src/bus/tco-metro-topologie-stations-td.json");
+        const data = JSON.parse(file.toString());
+        
+        for (const item of data) {
+            let newStation = new Arret();
+            let positionTest = new Position();
+            positionTest.SetPosition(item.coordonnees.lon,item.coordonnees.lat);
+
+            newStation.name=item.nom;
+            newStation.position=positionTest;
+            MetroStation.push(newStation);
+        }
+        
+        return MetroStation;
+    }
+
+    // retourne l'ensemble des stations de bus
+    async getAllBusStation(): Promise<Arret[]>{
+        const fs = require("fs");
+        
+        const file = fs.readFileSync("./src/bus/tco-bus-topologie-pointsarret-td.json");
+        const data = JSON.parse(file.toString());
+        
+        for (const item of data) {
+            //console.log(item.nom);
+            let newStation = new Arret();
+            let positionTest = new Position();
+            positionTest.SetPosition(item.coordonnees.lon,item.coordonnees.lat);
+
+            newStation.name=item.nom;
+            newStation.position=positionTest;
+            busStation.push(newStation);
+        }
+        
+        return busStation;
+    }
+
+    getBusDay(days:number,hours:number,minutes:number): Bus[]{
+        let buscirculating : Bus[];
+
+
+        return buscirculating;
+    }
+
+    
 }
