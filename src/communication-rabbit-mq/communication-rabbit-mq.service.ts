@@ -22,10 +22,11 @@ export class CommunicationRabbitMqService {
       //setTimeout(this.listenToRabbitMQ, 10000, this);
     } catch (error) {
       console.error('Could not connect to RabbitMQ: ', error);
-      if (connectionAttempts < 2) {
+      
+      if(true){
         connectionAttempts++;
         console.log(`Retrying in 5 seconds... (attempt ${connectionAttempts})`);
-        setTimeout(this.connectToRabbitMQ, 5000);
+        setTimeout(this.connectToRabbitMQ.bind(this), 5000);
       } else {
         console.error('Exceeded maximum number of connection attempts');
       }
