@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import * as WebSocket from 'ws';
 import * as amqp from 'amqplib';
 
+let connectionAttempts = 0;
+
 @Injectable()
 export class CommunicationRabbitMqService {
   wsServer: WebSocket.Server;
@@ -12,9 +14,26 @@ export class CommunicationRabbitMqService {
     features : []
   };
 
+  async connectToRabbitMQ() {
+    try {
+      this.connection = await amqp.connect('amqp://guest:guest@localhost:5672');
+      console.log('Successfully connected to RabbitMQ');
+      //this.initWebSocket();
+      //setTimeout(this.listenToRabbitMQ, 10000, this);
+    } catch (error) {
+      console.error('Could not connect to RabbitMQ: ', error);
+      if (connectionAttempts < 2) {
+        connectionAttempts++;
+        console.log(`Retrying in 5 seconds... (attempt ${connectionAttempts})`);
+        setTimeout(this.connectToRabbitMQ, 5000);
+      } else {
+        console.error('Exceeded maximum number of connection attempts');
+      }
+    }
+  }
+
   constructor(){
-    this.initWebSocket();
-    setTimeout(this.listenToRabbitMQ, 10000, this);
+    this.connectToRabbitMQ()    
   }
 
   initWebSocket(){
@@ -35,8 +54,8 @@ export class CommunicationRabbitMqService {
   }
 
   async listenToRabbitMQ(ref) {
-    let url = process.env.AMQP_URL || 'amqp://guest:guest@localhost:5672';
-    ref.connection = await amqp.connect(url);
+    //let url = process.env.AMQP_URL || 'amqp://guest:guest@localhost:5672';
+    //ref.connection = await amqp.connect(url);
     ref.channel = await ref.connection.createChannel();
 
     // Déclaration de la queue

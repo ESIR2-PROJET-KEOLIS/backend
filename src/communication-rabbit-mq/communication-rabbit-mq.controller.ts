@@ -6,6 +6,14 @@ import { CommunicationRabbitMqService } from './communication-rabbit-mq.service'
 export class CommunicationRabbitMqController{
     constructor(private readonly myService: CommunicationRabbitMqService) {}
 
+    async onModuleInit() {
+        try {
+            await this.myService.connectToRabbitMQ();
+        } catch (error) {
+            console.error(`Error connecting to RabbitMQ: ${error.message}`);
+        }
+    }
+
     @Get()
     async getMessages() {
       /*this.myService.listenToRabbitMQ();

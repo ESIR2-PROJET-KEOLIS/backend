@@ -17,5 +17,9 @@ export class Position{
     public GetPosition() : any{
         return this;
     }
+
+    public ToString(): any{
+        return "Longitude : "+this.longitude+", latitude : "+this.latitude;
+    }
   
 } 
