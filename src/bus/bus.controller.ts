@@ -25,6 +25,11 @@ export class BusController {
     return this.service.getAllSubwayStation();
   }
 
+  @Get('picto/bus')
+  async getBusPicto(): Promise<any>{   
+    return this.service.getAllBusPicto();
+  }
+
   @Get('horraires/:jours/:heure/:minutes')
   async getBusDay(@Param() parametre): Promise<Bus[]>{
     return this.service.getBusDay(parametre.jours,parametre.heure,parametre.minutes);
@@ -46,4 +51,5 @@ export class BusController {
   create(@Body() input: any): Bus {
     return this.service.create(input.ligne,input.longitude,input.latitude);
   }
+
 }
