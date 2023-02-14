@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Bus } from './bus.entity';
 import { Position } from '../position/position.entity';
 import { Arret } from './arret.entity';
+import { Pictogramme } from './Pictogrammme.entity';
 
 let positionTest = new Position();
 positionTest.SetPosition(12,35);
@@ -30,6 +31,7 @@ const buss : Bus[] = [
 ]
 const busStation : Arret[] = [];
 const MetroStation : Arret[] = [];
+const PictoBus : Pictogramme[] = [];
 
 @Injectable()
 export class BusService {
@@ -116,6 +118,28 @@ export class BusService {
         // retourner le tableau
 
         return buscirculating;
+    }
+
+    async getAllBusPicto(): Promise<any[]>{
+        const fs = require("fs");
+        
+        const file = fs.readFileSync("./src/bus/tco-bus-lignes-pictogrammes-dm.json");
+        const data = JSON.parse(file.toString());
+        
+        for (const item of data) {
+            //console.log(item.nom);
+            let newPicto = new Pictogramme();
+            
+            newPicto.nomLigne = item.nomcourtligne;
+            newPicto.nomImage = item.image.filename;
+            newPicto.format = item.image.format;
+            newPicto.width = item.image.width;
+            newPicto.height = item.image.height;
+
+            PictoBus.push(newPicto);
+        }
+
+        return PictoBus;
     }
 
     
