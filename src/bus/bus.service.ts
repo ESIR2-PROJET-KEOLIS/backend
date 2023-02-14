@@ -108,7 +108,12 @@ export class BusService {
 
     getBusDay(days:number,hours:number,minutes:number): Bus[]{
         let buscirculating : Bus[];
+        // Parcours du fichier
 
+        // Si le jours corresponds au parametre et l'heure et la minutes coresspondent
+        // Ajout dans un tableau
+
+        // retourner le tableau
 
         return buscirculating;
     }
