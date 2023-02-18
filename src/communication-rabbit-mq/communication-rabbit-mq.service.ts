@@ -16,7 +16,7 @@ export class CommunicationRabbitMqService {
 
   async connectToRabbitMQ() {
     try {
-      this.connection = await amqp.connect('amqp://guest:guest@localhost:5672');
+      this.connection = await amqp.connect('amqp://guest:guest@rabbitmq:5672');
       console.log('Successfully connected to RabbitMQ');
       //this.initWebSocket();
       //setTimeout(this.listenToRabbitMQ, 10000, this);
@@ -50,6 +50,7 @@ export class CommunicationRabbitMqService {
         console.log('received: %s', message);
       });
 
+      // TODO getbyId redis
       wsclient.send(JSON.stringify(ref.data));
     });
   }
@@ -68,6 +69,7 @@ export class CommunicationRabbitMqService {
       ref.channel.consume(queue, (msg) => {
         console.log(new Date().toString() + ` : Bus data received from rabbitmq`);
 
+        // TODO envoyer sa a Redis avec le create
         ref.data = JSON.parse(msg.content.toString());
 
         // Envoi du message aux clients du websocket
