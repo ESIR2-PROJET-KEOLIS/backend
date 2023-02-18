@@ -1,8 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Bus } from './bus.entity';
 import { Position } from '../position/position.entity';
 import { Arret } from './arret.entity';
 import { Pictogramme } from './Pictogrammme.entity';
+import { ConfigService } from '@nestjs/config';
+import { Redis } from 'ioredis';
+import { IORedisKey } from '../redis.modules';
 
 let positionTest = new Position();
 positionTest.SetPosition(12,35);
@@ -38,28 +41,63 @@ export class BusService {
     constructor(
         //@InjectRepository(User)
         //private repository: Repository<User>,
+        @Inject(IORedisKey) private readonly redisClient: Redis,
         
     ){}
 
-    create(Newligne: string, longitude:number, latitude:number): Bus {
+    async create(Newligne: string, longitude:number, latitude:number): Promise<Bus> {
 
         let newBus = new Bus();
         let newPos = new Position();
         newPos.SetPosition(longitude,latitude);
         newBus.ligne=Newligne;
         newBus.position=newPos;
-        buss.push(newBus);
-
-        return newBus;
+        try {
+            await this.redisClient
+            .multi([['send_command', 'JSON.SET', newBus.id, '.', JSON.stringify(newBus)]]).exec();
+            return newBus;
+        } catch (e) {
+            console.log("Erreur dans l'ajout");
+        throw new InternalServerErrorException();
+        }
+        //return newBus;
     }
 
-    getById(idBus:number): Bus{
-        for (const bus of buss) {
-            if(bus.id===idBus){
-                return bus;
-            }
+    /*async createBis():Promise<Bus>{
+        let busN = new Bus();
+        let positionTest = new Position();
+        positionTest.SetPosition(12,35);
+
+        busN.ligne = "C1";
+        busN.id=1;
+        busN.position= positionTest;
+        try {
+        await this.redisClient
+            .multi([['send_command', 'JSON.SET', busN.id, '.', JSON.stringify(busN)]]).exec();
+            return busN;
+        } catch (e) {
+            console.log("Erreur dans l'ajout");
+        throw new InternalServerErrorException();
         }
-        //return this.repository.findOneBy({id:(idU)});
+    }*/
+
+    async getById(id:number):Promise<Bus>{
+        let busN = new Bus();
+        try {
+            const busString = await this.redisClient
+            .multi([['send_command', 'JSON.GET', id, '.']]).exec(); 
+
+            let obj: unknown = busString[0][1];
+
+            if (typeof obj === 'string') {
+                let str = obj as string;
+                const data = JSON.parse(str);
+                return data;
+            }            
+        } catch (e) {
+            console.log("Bus inexistant");
+            throw new InternalServerErrorException(`Failed to get Bus ${id}`);
+        }
     }
 
     getAll():Bus[]{
@@ -144,3 +182,4 @@ export class BusService {
 
     
 }
+

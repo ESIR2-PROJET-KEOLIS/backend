@@ -35,7 +35,7 @@ export class BusController {
     return this.service.getBusDay(parametre.jours,parametre.heure,parametre.minutes);
   }
 
-  @ApiTags('Get')
+  /*@ApiTags('Get')
   @Get(':id')
   getById(@Param() parametre): Bus{  
     let busId = this.service.getById(+parametre.id);
@@ -44,12 +44,23 @@ export class BusController {
     }
     return busId;
   }
+*/
+  @Get(':id')
+  async getById(@Param() parametre): Promise<Bus>{  
+    //let busId = this.service.getById(+parametre.id);
+    //if(busId === undefined || busId === null){
+      //throw new HttpException('Could not find a user with the id ${parametre.id}', 404);
+    //}
+    return this.service.getById(parametre.id);
+  }
 
   @ApiTags('Création')
   @Post()
   @ApiCreatedResponse({description: 'The user has been successfully created.'})
-  create(@Body() input: any): Bus {
+  async create(@Body() input: any): Promise<Bus> {
     return this.service.create(input.ligne,input.longitude,input.latitude);
   }
+
+  
 
 }
