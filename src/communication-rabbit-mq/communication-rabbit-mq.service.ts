@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as WebSocket from 'ws';
 import * as amqp from 'amqplib';
+import { BusService } from 'src/bus/bus.service';
 
 let connectionAttempts = 0;
 
@@ -33,7 +34,7 @@ export class CommunicationRabbitMqService {
     }
   }
 
-  constructor(){
+  constructor(private service: BusService,){
     this.connectToRabbitMQ()    
   }
 
@@ -51,8 +52,9 @@ export class CommunicationRabbitMqService {
       });
 
       // TODO getbyId redis
-      wsclient.send(JSON.stringify(ref.data));
+      wsclient.send(JSON.stringify(ref.data)/* this.service.getById(JSON.stringify(ref.data)) */); 
     });
+    
   }
 
   async listenToRabbitMQ(ref) {
@@ -71,7 +73,8 @@ export class CommunicationRabbitMqService {
 
         // TODO envoyer sa a Redis avec le create
         ref.data = JSON.parse(msg.content.toString());
-
+        this.service.addRedis(ref.data);
+        
         // Envoi du message aux clients du websocket
         ref.wsServer.clients.forEach((client) => {
           if (client.readyState === WebSocket.OPEN) {

@@ -9,6 +9,7 @@ import { IORedisKey } from '../redis.modules';
 
 let positionTest = new Position();
 positionTest.SetPosition(12,35);
+let id : number = 0;
 
 const buss : Bus[] = [
     {
@@ -42,8 +43,19 @@ export class BusService {
         //@InjectRepository(User)
         //private repository: Repository<User>,
         @Inject(IORedisKey) private readonly redisClient: Redis,
-        
     ){}
+
+    async addRedis(data:any){
+        try {
+            await this.redisClient
+            .multi([['send_command', 'JSON.SET', id, '.', JSON.stringify(data)]]).exec();
+            id++;
+            return data;
+        } catch (e) {
+            console.log("Erreur dans l'ajout");
+        throw new InternalServerErrorException();
+        }
+    }
 
     async create(Newligne: string, longitude:number, latitude:number): Promise<Bus> {
 
