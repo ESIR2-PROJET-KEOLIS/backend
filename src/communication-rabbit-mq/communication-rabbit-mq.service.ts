@@ -16,13 +16,13 @@ export class CommunicationRabbitMqService {
 
   async connectToRabbitMQ() {
     try {
-      this.connection = await amqp.connect('amqp://guest:guest@rabbitmq:5672');
+      let url = process.env.AMQP_URL || 'amqp://guest:guest@localhost:5672';
+      this.connection = await amqp.connect(url);
       console.log('Successfully connected to RabbitMQ');
-      //this.initWebSocket();
-      //setTimeout(this.listenToRabbitMQ, 10000, this);
+      this.initWebSocket();
+      this.listenToRabbitMQ(this);
     } catch (error) {
       console.error('Could not connect to RabbitMQ: ', error);
-      
       if(true){
         connectionAttempts++;
         console.log(`Retrying in 5 seconds... (attempt ${connectionAttempts})`);
