@@ -10,24 +10,8 @@ export class LinesController {
 
   @Get()
   getAll(@Body() lines: string[]): any{
-    let baseURL = (process.env.API_PROCESSUNIT || 'http://localhost:8090')+"/optimizedpath?line=";
-    console.log(baseURL);
-    let urls: string[] = [];
-    lines.forEach(line => {
-      urls.push(baseURL+line+"&sens=0");
-      urls.push(baseURL+line+"&sens=1");
-    });
 
-    /*const request = axios.get("http://localhost:8090/optimizedpath?line=C1&sens=1");
-    request
-      .then((response) => {
-        console.info(response.data);
-      })
-      .catch((error) => {
-        console.error(error);
-      });*/
-
-    console.log(urls);
+    /*console.log(urls);
 
     const requests = urls.map((url) => axios.get(url));
 
@@ -42,9 +26,9 @@ export class LinesController {
       } else {
         console.error(error.message);
       }
-    });
+    });*/
 
-    return this.service.getAll();
+    return this.service.getAll(lines);
   }
 
 }
