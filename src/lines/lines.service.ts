@@ -1,19 +1,23 @@
 import { Injectable } from '@nestjs/common';
-import { Bus } from "../bus/bus.entity";
-import process from "process";
-import axios from "axios/index";
+import * as process from "process";
+import axios from "axios";
 
 @Injectable()
 export class LinesService {
 
   async getAll(lines: string[]){
-    let baseURL = (process.env.API_PROCESSUNIT || 'http://localhost:8090')+"/optimizedpath";
+    let baseURL = (process.env.API_PROCESSUNIT || 'http://localhost:8090')+"/optimizedpath?line=";
+    let urls: string[] = [];
+    lines.forEach(line => {
+      urls.push(baseURL+line+"&sens=0");
+      urls.push(baseURL+line+"&sens=1");
+    });
 
-    const response = await axios.get(baseURL, { params: { bus: lines } });
+    const requests = urls.map((url) => axios.get(url));
 
-    console.log(response.data);
+    const response = await axios.all(requests);
 
-    return [];
+    return response.map((resp) => resp.data);
   }
 
 }
