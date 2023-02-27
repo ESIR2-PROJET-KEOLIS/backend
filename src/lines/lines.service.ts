@@ -17,7 +17,16 @@ export class LinesService {
 
     const response = await axios.all(requests);
 
-    return response.map((resp) => resp.data);
+    let list = response.map((resp) => {
+      let urlreq = resp.config.url;
+      let liner = urlreq.split("line=")[1].split("&")[0];
+      let sensr = urlreq.split("sens=")[1];
+      let res = {};
+      res[liner+"_"+sensr] = resp.data;
+      return res;
+    });
+
+    return list.reduce(((obj1, obj2) => Object.assign(obj1, obj2)), {})
   }
 
 }
