@@ -5,12 +5,13 @@ import { CommunicationRabbitMqModule } from './communication-rabbit-mq/communica
 import { BusModule } from './bus/bus.module';
 import { PositionModule } from './position/position.module';
 import { ConfigModule } from '@nestjs/config';
+import { LinesModule } from './lines/lines.module';
 
 
 @Module({
   controllers: [AppController],
   providers: [AppService],
-  imports: [BusModule, PositionModule,ConfigModule.forRoot(),CommunicationRabbitMqModule],
+  imports: [BusModule, PositionModule,ConfigModule.forRoot(),CommunicationRabbitMqModule, LinesModule],
 
 })
 export class AppModule {}
