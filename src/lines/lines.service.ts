@@ -6,8 +6,7 @@ import axios from "axios";
 export class LinesService {
 
   async getAll(lines: string[]){
-    // let baseURL = (/*process.env.API_PROCESSUNIT ||*/ 'http://localhost:8090')+"/optimizedpath?line=";
-    let baseURL = 'http://processingunit:8090/optimizedpath?line=';
+    let baseURL = (process.env.API_PROCESSUNIT || 'http://localhost:8090')+"/optimizedpath?line=";
     let urls: string[] = [];
     lines.forEach(line => {
       urls.push(baseURL+line+"&sens=0");
