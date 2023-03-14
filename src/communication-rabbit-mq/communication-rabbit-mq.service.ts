@@ -69,8 +69,20 @@ export class CommunicationRabbitMqService {
       ref.channel.consume(queue, (msg) => {
         console.log(new Date().toString() + ` : Bus data received from rabbitmq`);
 
+        let receivedData = JSON.parse(msg.content.toString());
+        if(receivedData != undefined
+          && receivedData.features != undefined
+          && receivedData.features[0] != undefined
+          && ref.data != undefined
+          && ref.data.features[0] != undefined
+          && ref.data.features[0].geometry[0] == receivedData.features[0].geometry[0]
+          && ref.data.features[0].geometry[1] == receivedData.features[0].geometry[1]){
+          console.log("SAME DATA");
+          return;
+        }
+
         // TODO envoyer sa a Redis avec le create
-        ref.data = JSON.parse(msg.content.toString());
+        ref.data = receivedData;
 
         // Envoi du message aux clients du websocket
         ref.wsServer.clients.forEach((client) => {
