@@ -72,13 +72,21 @@ export class CommunicationRabbitMqService {
         let receivedData = JSON.parse(msg.content.toString());
         if(receivedData != undefined
           && receivedData.features != undefined
-          && receivedData.features[0] != undefined
-          && ref.data != undefined
-          && ref.data.features[0] != undefined
-          && ref.data.features[0].geometry[0] == receivedData.features[0].geometry[0]
-          && ref.data.features[0].geometry[1] == receivedData.features[0].geometry[1]){
-          console.log("SAME DATA");
-          return;
+          && ref.data != undefined){
+          let diff = ref.data.features.length != receivedData.features.length;
+          if(!diff) {
+            for(let i = 0; i < ref.data.features.length; i++){
+              if(ref.data.features[i].properties.id !== receivedData.features[i].properties.id
+                || ref.data.features[i].geometry[0] !== receivedData.features[i].geometry[0]
+                || ref.data.features[i].geometry[1] !== receivedData.features[i].geometry[1]){
+                diff = true;
+              }
+            }
+          }
+          if(!diff){
+            console.log("SAME DATA");
+            return;
+          }
         }
 
         // TODO envoyer sa a Redis avec le create
