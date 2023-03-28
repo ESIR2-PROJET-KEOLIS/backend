@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import * as WebSocket from 'ws';
 import * as amqp from 'amqplib';
+import { BusService } from 'src/bus/bus.service';
 
 let connectionAttempts = 0;
 
@@ -9,10 +10,10 @@ export class CommunicationRabbitMqService {
   wsServer: WebSocket.Server;
   private connection: amqp.Connection;
   private channel: amqp.Channel;
-  private data: object = {
-    type: "FeatureCollection",
-    features : []
-  };
+
+  constructor(@Inject(BusService) private readonly busService: BusService){
+    this.connectToRabbitMQ()    
+  }
 
   async connectToRabbitMQ() {
     try {
@@ -33,9 +34,7 @@ export class CommunicationRabbitMqService {
     }
   }
 
-  constructor(){
-    this.connectToRabbitMQ()    
-  }
+  
 
   initWebSocket(){
     let ws = new WebSocket.Server({ port: 4000, host: '0.0.0.0' });
@@ -49,9 +48,19 @@ export class CommunicationRabbitMqService {
       wsclient.on('message', function incoming(message) {
         console.log('received: %s', message);
       });
-
-      // TODO getbyId redis
-      wsclient.send(JSON.stringify(ref.data));
+      
+      if (ref.busService) {
+        ref.busService.getRealTimeBus()
+          .then((tempData) => {
+            const dataParse = JSON.parse(JSON.stringify(tempData))
+            wsclient.send(JSON.stringify(dataParse)); 
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      } else {
+        console.log("Erreur: busService n'est pas défini.");
+      }
     });
   }
 
@@ -68,30 +77,34 @@ export class CommunicationRabbitMqService {
       // Consommer les messages de la queue
       ref.channel.consume(queue, (msg) => {
         console.log(new Date().toString() + ` : Bus data received from rabbitmq`);
-
-        let receivedData = JSON.parse(msg.content.toString());
-        if(receivedData != undefined
-          && receivedData.features != undefined
-          && ref.data != undefined){
-          let diff = ref.data.features.length != receivedData.features.length;
-          if(!diff) {
-            for(let i = 0; i < ref.data.features.length; i++){
-              if(ref.data.features[i].properties.id !== receivedData.features[i].properties.id
-                || ref.data.features[i].geometry[0] !== receivedData.features[i].geometry[0]
-                || ref.data.features[i].geometry[1] !== receivedData.features[i].geometry[1]){
-                diff = true;
+        
+        let tempData = this.busService.getRealTimeBus();
+        this.busService.getRealTimeBus().then((tempData) => {
+            //console.log("DAta reçu : ",tempData);
+          let receivedData = JSON.parse(msg.content.toString());
+          if(receivedData != undefined
+            && receivedData.features != undefined
+            && tempData != undefined){
+            let diff = tempData['features'].length != receivedData.features.length;
+            if(!diff) {
+              for(let i = 0; i < tempData['features'].length; i++){
+                if(tempData['features'][i].properties.id !== receivedData.features[i].properties.id
+                  || tempData['features'][i].geometry[0] !== receivedData.features[i].geometry[0]
+                  || tempData['features'][i].geometry[1] !== receivedData.features[i].geometry[1]){
+                  diff = true;
+                }
               }
             }
+            if(!diff){
+              console.log("SAME DATA");
+              return;
+            }
           }
-          if(!diff){
-            console.log("SAME DATA");
-            return;
-          }
-        }
-
-        // TODO envoyer sa a Redis avec le create
-        ref.data = receivedData;
-
+          this.busService.addRedis(receivedData);
+        }).catch((error) => {
+          console.log(error);
+        });
+      
         // Envoi du message aux clients du websocket
         ref.wsServer.clients.forEach((client) => {
           if (client.readyState === WebSocket.OPEN) {
