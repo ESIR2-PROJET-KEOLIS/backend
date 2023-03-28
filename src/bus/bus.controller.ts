@@ -10,10 +10,6 @@ export class BusController {
 
   constructor(private service: BusService){}
 
-  @Get()
-  getAll(): Bus[]{   
-      return this.service.getAll();
-  }
 
   @Get('station/bus')
   async getBusStation(): Promise<any>{   
@@ -44,15 +40,15 @@ export class BusController {
     }
     return busId;
   }
-*/
+
   @Get(':id')
-  async getById(@Param() parametre): Promise<Bus>{  
+  async getById(@Param() parametre): Promise<any>{  
     //let busId = this.service.getById(+parametre.id);
     //if(busId === undefined || busId === null){
       //throw new HttpException('Could not find a user with the id ${parametre.id}', 404);
     //}
-    return this.service.getById(parametre.id);
-  }
+    return this.service.getRealTimeBus();
+  }*/
 
   @ApiTags('Création')
   @Post()
