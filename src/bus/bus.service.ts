@@ -7,9 +7,12 @@ import { ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
 import { IORedisKey } from '../redis.modules';
 
+
+/*
 let positionTest = new Position();
 positionTest.SetPosition(12,35);
 let id : number = 0;
+
 
 const buss : Bus[] = [
     {
@@ -33,27 +36,30 @@ const buss : Bus[] = [
         position: positionTest.GetPosition()
     },
 ]
+*/
+
 const busStation : Arret[] = [];
 const MetroStation : Arret[] = [];
 const PictoBus : Pictogramme[] = [];
 
+
+let idKey =0;
 @Injectable()
 export class BusService {
+    
     constructor(
-        //@InjectRepository(User)
-        //private repository: Repository<User>,
         @Inject(IORedisKey) private readonly redisClient: Redis,
     ){}
 
-    async addRedis(data:any){
+
+    async addRedis(data:any):Promise<any[]>{
         try {
-            await this.redisClient
-            .multi([['send_command', 'JSON.SET', id, '.', JSON.stringify(data)]]).exec();
-            id++;
+            await this.redisClient.multi().set(`${idKey}`, JSON.stringify(data)).exec();
+            idKey++;
             return data;
         } catch (e) {
-            console.log("Erreur dans l'ajout");
-        throw new InternalServerErrorException();
+            console.log(e);
+            throw new InternalServerErrorException();
         }
     }
 
@@ -65,8 +71,7 @@ export class BusService {
         newBus.ligne=Newligne;
         newBus.position=newPos;
         try {
-            await this.redisClient
-            .multi([['send_command', 'JSON.SET', newBus.id, '.', JSON.stringify(newBus)]]).exec();
+            await this.redisClient.multi([['send_command', 'JSON.SET', newBus.id, '.', JSON.stringify(newBus)]]).exec();
             return newBus;
         } catch (e) {
             console.log("Erreur dans l'ajout");
@@ -93,28 +98,16 @@ export class BusService {
         }
     }*/
 
-    async getById(id:number):Promise<Bus>{
-        let busN = new Bus();
+    async getRealTimeBus():Promise<{features:any[]}[]>{
         try {
-            const busString = await this.redisClient
-            .multi([['send_command', 'JSON.GET', id, '.']]).exec(); 
-
-            let obj: unknown = busString[0][1];
-
-            if (typeof obj === 'string') {
-                let str = obj as string;
-                const data = JSON.parse(str);
-                return data;
-            }            
+            const value = await this.redisClient.get("0");
+            const data = JSON.parse(value);
+            
+            return data;
         } catch (e) {
             console.log("Bus inexistant");
-            throw new InternalServerErrorException(`Failed to get Bus ${id}`);
+            throw new InternalServerErrorException(`Failed to get Bus}`);
         }
-    }
-
-    getAll():Bus[]{
-        return buss;
-        //return this.repository.find();
     }
 
 

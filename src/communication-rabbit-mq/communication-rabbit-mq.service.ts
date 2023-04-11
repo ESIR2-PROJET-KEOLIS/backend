@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import * as WebSocket from 'ws';
 import * as amqp from 'amqplib';
 import { BusService } from 'src/bus/bus.service';
@@ -10,20 +10,20 @@ export class CommunicationRabbitMqService {
   wsServer: WebSocket.Server;
   private connection: amqp.Connection;
   private channel: amqp.Channel;
-  private data: object = {
-    type: "FeatureCollection",
-    features : []
-  };
+
+  constructor(@Inject(BusService) private readonly busService: BusService){
+    this.connectToRabbitMQ()    
+  }
 
   async connectToRabbitMQ() {
     try {
-      this.connection = await amqp.connect('amqp://guest:guest@rabbitmq:5672');
+      let url = process.env.AMQP_URL || 'amqp://guest:guest@localhost:5672';
+      this.connection = await amqp.connect(url);
       console.log('Successfully connected to RabbitMQ');
-      //this.initWebSocket();
-      //setTimeout(this.listenToRabbitMQ, 10000, this);
+      this.initWebSocket();
+      this.listenToRabbitMQ(this);
     } catch (error) {
       console.error('Could not connect to RabbitMQ: ', error);
-      
       if(true){
         connectionAttempts++;
         console.log(`Retrying in 5 seconds... (attempt ${connectionAttempts})`);
@@ -38,6 +38,7 @@ export class CommunicationRabbitMqService {
     this.connectToRabbitMQ()    
   }
 
+
   initWebSocket(){
     let ws = new WebSocket.Server({ port: 4000, host: '0.0.0.0' });
     this.wsServer = ws;
@@ -51,8 +52,19 @@ export class CommunicationRabbitMqService {
         console.log('received: %s', message);
       });
 
-      // TODO getbyId redis
-      wsclient.send(JSON.stringify(ref.data)/* this.service.getById(JSON.stringify(ref.data)) */); 
+      
+      if (ref.busService) {
+        ref.busService.getRealTimeBus()
+          .then((tempData) => {
+            const dataParse = JSON.parse(JSON.stringify(tempData))
+            wsclient.send(JSON.stringify(dataParse)); 
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      } else {
+        console.log("Erreur: busService n'est pas défini.");
+      }
     });
     
   }
@@ -71,10 +83,34 @@ export class CommunicationRabbitMqService {
       ref.channel.consume(queue, (msg) => {
         console.log(new Date().toString() + ` : Bus data received from rabbitmq`);
 
-        // TODO envoyer sa a Redis avec le create
-        ref.data = JSON.parse(msg.content.toString());
-        this.service.addRedis(ref.data);
         
+        let tempData = this.busService.getRealTimeBus();
+        this.busService.getRealTimeBus().then((tempData) => {
+            //console.log("DAta reçu : ",tempData);
+          let receivedData = JSON.parse(msg.content.toString());
+          if(receivedData != undefined
+            && receivedData.features != undefined
+            && tempData != undefined){
+            let diff = tempData['features'].length != receivedData.features.length;
+            if(!diff) {
+              for(let i = 0; i < tempData['features'].length; i++){
+                if(tempData['features'][i].properties.id !== receivedData.features[i].properties.id
+                  || tempData['features'][i].geometry[0] !== receivedData.features[i].geometry[0]
+                  || tempData['features'][i].geometry[1] !== receivedData.features[i].geometry[1]){
+                  diff = true;
+                }
+              }
+            }
+            if(!diff){
+              console.log("SAME DATA");
+              return;
+            }
+          }
+          this.busService.addRedis(receivedData);
+        }).catch((error) => {
+          console.log(error);
+        });
+      
         // Envoi du message aux clients du websocket
         ref.wsServer.clients.forEach((client) => {
           if (client.readyState === WebSocket.OPEN) {

@@ -6,6 +6,7 @@ import { BusService } from './bus.service';
 @Module({
   imports: [redisModule],
   controllers: [BusController],
-  providers: [BusService]
+  providers: [BusService],
+  exports: [BusService]
 })
 export class BusModule {}

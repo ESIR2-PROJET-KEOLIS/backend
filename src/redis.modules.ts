@@ -28,6 +28,9 @@ export class RedisModule {
       useFactory: async (...args) => {
         const { connectionOptions, onClientReady } = await useFactory(...args);
 
+        let host = process.env.REDIS_HOST || 'localhost';
+        connectionOptions.host = host;
+
         const client = await new IORedis(connectionOptions);
 
         onClientReady(client);
