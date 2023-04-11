@@ -6,12 +6,13 @@ import { BusModule } from './bus/bus.module';
 import { PositionModule } from './position/position.module';
 import { ConfigModule } from '@nestjs/config';
 import { LinesModule } from './lines/lines.module';
+import { ActionModule } from './action/action.module';
 
 
 @Module({
   controllers: [AppController],
   providers: [AppService],
-  imports: [BusModule, PositionModule,ConfigModule.forRoot(),CommunicationRabbitMqModule, LinesModule],
+  imports: [BusModule, PositionModule,ConfigModule.forRoot(),CommunicationRabbitMqModule, LinesModule, ActionModule],
 
 })
 export class AppModule {}
