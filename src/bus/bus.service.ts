@@ -11,6 +11,7 @@ import { IORedisKey } from '../redis.modules';
 /*
 let positionTest = new Position();
 positionTest.SetPosition(12,35);
+let id : number = 0;
 
 
 const buss : Bus[] = [
@@ -49,6 +50,7 @@ export class BusService {
     constructor(
         @Inject(IORedisKey) private readonly redisClient: Redis,
     ){}
+
 
     async addRedis(data:any):Promise<any[]>{
         try {

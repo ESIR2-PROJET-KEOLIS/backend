@@ -34,7 +34,10 @@ export class CommunicationRabbitMqService {
     }
   }
 
-  
+  constructor(private service: BusService,){
+    this.connectToRabbitMQ()    
+  }
+
 
   initWebSocket(){
     let ws = new WebSocket.Server({ port: 4000, host: '0.0.0.0' });
@@ -48,6 +51,7 @@ export class CommunicationRabbitMqService {
       wsclient.on('message', function incoming(message) {
         console.log('received: %s', message);
       });
+
       
       if (ref.busService) {
         ref.busService.getRealTimeBus()
@@ -62,6 +66,7 @@ export class CommunicationRabbitMqService {
         console.log("Erreur: busService n'est pas défini.");
       }
     });
+    
   }
 
   async listenToRabbitMQ(ref) {
@@ -77,6 +82,7 @@ export class CommunicationRabbitMqService {
       // Consommer les messages de la queue
       ref.channel.consume(queue, (msg) => {
         console.log(new Date().toString() + ` : Bus data received from rabbitmq`);
+
         
         let tempData = this.busService.getRealTimeBus();
         this.busService.getRealTimeBus().then((tempData) => {
