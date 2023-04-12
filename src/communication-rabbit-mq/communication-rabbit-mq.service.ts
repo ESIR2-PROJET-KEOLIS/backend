@@ -34,11 +34,6 @@ export class CommunicationRabbitMqService {
     }
   }
 
-  constructor(private service: BusService,){
-    this.connectToRabbitMQ()    
-  }
-
-
   initWebSocket(){
     let ws = new WebSocket.Server({ port: 4000, host: '0.0.0.0' });
     this.wsServer = ws;
@@ -86,7 +81,7 @@ export class CommunicationRabbitMqService {
         
         let tempData = this.busService.getRealTimeBus();
         this.busService.getRealTimeBus().then((tempData) => {
-            //console.log("DAta reçu : ",tempData);
+          console.log("process msg");
           let receivedData = JSON.parse(msg.content.toString());
           if(receivedData != undefined
             && receivedData.features != undefined
@@ -103,21 +98,24 @@ export class CommunicationRabbitMqService {
             }
             if(!diff){
               console.log("SAME DATA");
+              //ref.channel.ack(msg);
               return;
             }
+
+            // Envoi du message aux clients du websocket
+            ref.wsServer.clients.forEach((client) => {
+              if (client.readyState === WebSocket.OPEN) {
+                client.send(msg.content.toString());
+              }
+            });
+
           }
           this.busService.addRedis(receivedData);
         }).catch((error) => {
           console.log(error);
         });
-      
-        // Envoi du message aux clients du websocket
-        ref.wsServer.clients.forEach((client) => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify(ref.data));
-          }
-        });
 
+        console.log("send ack message");
         ref.channel.ack(msg);
       });
     }
