@@ -6,12 +6,14 @@ import { HttpService } from '@nestjs/axios';
 import { AxiosResponse } from 'axios';
 import * as process from "process";
 import axios from "axios";
+import { escape } from 'mysql';
 
 
 
 const busStation : Arret[] = [];
-const MetroStation : Arret[] = [];
 const PictoBus : Pictogramme[] = [];
+const MetroStation : Arret[] = [];
+
 let baseURL = (process.env.API_PROCESSUNIT || 'http://localhost:8090');
 let lines = ['10', '11', '12', '13', '14', '226', '32', '34', '39', '50', '51', '52', '53', '54', '55', '56', '59', '61', '62', '64', '65', '67', '68', '71', '72', '73', '74', '75', '76', '77', '78', '79', '80', '81', '82', '83', '91', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7']
 
@@ -23,7 +25,9 @@ export class ActionService {
     constructor(private readonly httpService: HttpService) {}
 
     async getAllBusLocationTime(day:string, hours:number, minutes:number): Promise<any> {
-        
+        day = escape(day);
+        hours = escape(hours);
+        minutes = escape(minutes);
         /*if(hours >= 0 && hours<= 8){
             hours = hours + 24;
         }*/
@@ -100,5 +104,22 @@ export class ActionService {
         return busStation;
     }
 
+    async getAllSubwayStation():Promise<Arret[]>{
+        const fs = require("fs");
+        
+        const file = fs.readFileSync("./src/bus/tco-metro-topologie-stations-td.json");
+        const data = JSON.parse(file.toString());
+        
+        for (const item of data) {
+            let newStation = new Arret();
+            let positionTest = new Position();
+            positionTest.SetPosition(item.coordonnees.lon,item.coordonnees.lat);
 
+            newStation.name=item.nom;
+            newStation.position=positionTest;
+            MetroStation.push(newStation);
+        }
+        
+        return MetroStation;
+    }
 }
