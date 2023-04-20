@@ -26,4 +26,9 @@ export class ActionController {
         return this.service.getAllBusLocationTime(parametre.day,parametre.hour,parametre.minute);
     }
 
+    @Get('station/metro')
+    async getAllMetroStation(): Promise<any>{   
+      return this.service.getAllSubwayStation();
+    }
+
 }
