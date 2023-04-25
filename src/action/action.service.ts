@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Pictogramme } from './Pictogrammme.entity';
 import { Arret } from './arret.entity';
-import { Position } from 'src/position/position.entity';
+import { Position } from '../position/position.entity';
 import { HttpService } from '@nestjs/axios';
 import { AxiosResponse } from 'axios';
 import * as process from "process";
