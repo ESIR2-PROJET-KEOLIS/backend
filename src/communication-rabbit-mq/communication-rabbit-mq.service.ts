@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import * as WebSocket from 'ws';
 import * as amqp from 'amqplib';
-import { BusService } from 'src/bus/bus.service';
+import { BusService } from '../bus/bus.service';
 
 let connectionAttempts = 0;
 
