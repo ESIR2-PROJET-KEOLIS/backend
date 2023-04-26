@@ -25,10 +25,10 @@ export class ActionService {
     constructor(private readonly httpService: HttpService) {}
 
     async getAllBusLocationTime(day:string, hours:number, minutes:number): Promise<any> {
-        day = escape(day);
+        /*day = escape(day);
         hours = escape(hours);
         minutes = escape(minutes);
-        /*if(hours >= 0 && hours<= 8){
+        if(hours >= 0 && hours<= 8){
             hours = hours + 24;
         }*/
         let id = 0;
