@@ -31,4 +31,9 @@ export class ActionController {
       return this.service.getAllSubwayStation();
     }
 
+    @Get('vitesse/bus')
+    async getspeedBus(): Promise<any>{   
+      return this.service.getBusVitesse();
+    }
+
 }

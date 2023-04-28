@@ -16,12 +16,11 @@ const MetroStation : Arret[] = [];
 
 let baseURL = (process.env.API_PROCESSUNIT || 'http://localhost:8090');
 let lines = ['10', '11', '12', '13', '14', '226', '32', '34', '39', '50', '51', '52', '53', '54', '55', '56', '59', '61', '62', '64', '65', '67', '68', '71', '72', '73', '74', '75', '76', '77', '78', '79', '80', '81', '82', '83', '91', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7']
-
+let speeds = ['speed0', 'speed1']
 
 @Injectable()
 export class ActionService {
 
-    
     constructor(private readonly httpService: HttpService) {}
 
     async getAllBusLocationTime(day:string, hours:number, minutes:number): Promise<any> {
@@ -122,4 +121,15 @@ export class ActionService {
         
         return MetroStation;
     }
+
+    async getBusVitesse():Promise<any[]>{
+        let retourLineSpeed: any[] = [];
+        for (const speed of speeds) {
+            const response: AxiosResponse<any> = await this.httpService.get(baseURL+'/'+speed).toPromise();
+            const speedData = response['data'];
+            retourLineSpeed.push({ speed, speedData });
+        }
+        return retourLineSpeed;
+    }
+    
 }
